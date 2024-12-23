@@ -1,3 +1,26 @@
+### Getting Help
+```
+git help <verb>
+git <verb> --help
+git <verb> -h
+man git-<verb>
+
+note: verb denotes the specific git command
+
+example: 
+$ git help add
+
+# some documentation #
+
+press q to quite
+```
+### Checking Your Settings (all key-values from all files will display)
+```
+git config --list
+
+```
+- if you want to check specific key,your username, such as use git config user.name
+- if you are concern with the final configuration that define your git, use --show-origin option
 
 ### Installing Git
 Linux
