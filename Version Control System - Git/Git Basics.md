@@ -1,6 +1,6 @@
 ### Git Aliases
 - git config --global alias.unstage 'reset HEAD --'; notice how unstage is defined with reset HEAD -- command
-- git unstage fileA \equiv git reset HEAD -- file A
+- git unstage fileA $\equiv$ git reset HEAD -- file A
 
 ### Tagging (purpose: to denote importance)
 Listing Your Tags
