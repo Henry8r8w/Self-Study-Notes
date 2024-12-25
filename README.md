@@ -1,4 +1,4 @@
-# Welcome to My Notes Repo
+# Hello!
 
 This is a repository with notes and resources I want to store for future reference. The notes are written in  markdown and accompanied by some code examples/challenges to put ideas into practice. The topics are selected based on my interests, which intersect in signal processing, embedded software, econometrics, and some cool CS concepts I began learning during my time in school.
 
