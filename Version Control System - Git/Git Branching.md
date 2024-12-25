@@ -1,5 +1,5 @@
 ### Basic Branching and Merging
-Basic Branching
+**Basic Branching**
 
 - Say, you're going to work on issue #53 branch, you would type git checkout -b iss53
 - Say, you have a work on a website to commit, and have HEAD in your currrent branch iss53
@@ -38,7 +38,7 @@ master (branch) -> c2
 
 c2 -> c1 -> c0
 
-- After running some test, the hotfix is good to go and get back to the master branch
+- After running some test, the hotfix is good to go and get merge to the master branch
 ```
 git checkout master
 git merge hotfix
@@ -48,6 +48,34 @@ Fast-forward                # when no divergent work (e.g. two branches pointing
  index.html | 2 ++
  1 file changed, 2 insertions(+)
 ```
+HEAD ->master (branch)-> hotfix (branch) -> c4 -> c3
+
+iss53 (branch) -> c3
+
+c2 -> c1 -> c0
+
+- Once the fix is deployed, you want to delete the hotfix branch
+```
+git branch -d hotfix
+Deleted branch hotfix (3a0874c)
+```
+- now you may want to continue to work on issue53 to work on the issue
+```
+git checkout iss53
+
+vim index.html
+git commit -a -m 'Finish the new footer [issue 53]'
+```
+HEAD -> iss53 (branch) -> c5 -> c3
+
+master (branch) -> c4
+
+c3 -> c2 -> c1 -> c0
+
+
+
+**Basic Merging**
+
 ### Switching Branches
 ```
 git checkout testing
