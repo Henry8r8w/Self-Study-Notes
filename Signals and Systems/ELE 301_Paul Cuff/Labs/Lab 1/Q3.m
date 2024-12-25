@@ -1,5 +1,5 @@
 
-% Task 4: Phase Error - randph.m
+%% Task 4: Phase Error - randph.m
 % Two signals played: 
     % 1. 10 frequency from middle C with ten harmonics 
     % 2. same with # bt with a random (by rand) phase in [-pi, pi]
@@ -7,7 +7,7 @@
 % I could only tell the difference when the signal is plotted
 
 
-% Task 3: Harmonics
+%% Task 3: Harmonics
 clear, clf reset;
 Amp = [1 0 1/3 0 1/5 0 1/7 0 1/9 0]/pi;
 ph = (pi/2)*[ 1 1 1 1 1 1 1 1 1 1 ];
@@ -23,7 +23,7 @@ plot(t(1:300),x(1, 1:300));
 % shannon's sampling theorem saying that if Fs> 2*max{f}, 
 % then the sample adeutaely represent the original signal
 
-% Task 2: Chords
+%% Task 2: Chords
 clear, clf reset;
 K = 3;
 Amp = [4 4 4]; % 1 x 3
@@ -58,7 +58,7 @@ hold off;
 
 
 
-% Task 1: Pure Tone
+%% Task 1: Pure Tone
 clear, clf reset;
 Fs = 8e3;
 Fs_new = 1e3;
