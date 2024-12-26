@@ -312,6 +312,4 @@ $$g_{X,Y}(x, y) = \frac{1}{2\pi \sigma_X \sigma_Y \sqrt{1 - \rho_{XY}^2}}
 
 The joint density of uncorrelated ($\rho_{XY} = 0$) standard normal
 variables simplifies to:  
-$$
-g_{X,Y}(x, y) = \frac{1}{2\pi} \cdot \exp\left\{-\frac{1}{2} \left[x^2 + y^2\right]\right\}.
-$$
+$$g_{X,Y}(x, y) = \frac{1}{2\pi} \cdot \exp\left\{-\frac{1}{2} \left[x^2 + y^2\right]\right\}$$
