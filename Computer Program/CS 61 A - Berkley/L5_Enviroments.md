@@ -1,4 +1,4 @@
-### Curying
+### Currying
 - Defintion: Transofmring a multi-argumetn function intoa single-argument, higher order function
   - Discovered by Moses Schoenfikel and re-discovereed by Haskell Curry
 ```python
