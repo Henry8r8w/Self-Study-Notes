@@ -1,9 +1,63 @@
+### Recursion and Iteration
+Iteration is a special case of recursion
+- Idea: figure out what state must be maintained by the iterative function
+
+```python
+def split(n):
+    return n// 10, n %10 # ex. 3, 2 = split(32)
+def sum_digits(n):
+    """Return the sum of the digits of positive integer n"""
+    if n < 10:
+        return n
+    else:
+        all_but_last, last = split(n) 
+        return sum_digits(all_but_last) + last 
+def sum_digits_iter(n):
+    digit_sum = 0
+    while n > 0:
+        n, last = split(n)
+        digit_sum = digit_sum +last
+    return digit_sum
+def sum_digits_rec(n, digit_sum):
+    if n ==0:
+        return digit_sum
+    else:
+        n, last = split(n)
+        return sum_digits_rec(n, digit_sum + last)
+# notice how the arguments in the recursive call are the updated assignments in the iterative method
+```
+
+
 ### Mutual Recursion
 The Luhn Algorithm
-1. From the rightmost digit, which is the check digit, moving left, dobule the value of eery second digit; if product of this doubling operation is greater than 9 (e.g., 7*2 = 14), then sum the digits of the product(e.g., 10: 1+ 0 = 1, 14: 1 + 14 = 5)
+1. From the rightmost digit, which is the check digit, moving left, dobule the value of every second digit; if product of this doubling operation is greater than 9 (e.g., 7*2 = 14), then sum the digits of the product(e.g., 10: 1+ 0 = 1, 14: 1 + 4 = 5)
 2. Sum of all the digits and check if it is equal to expected digit
-```python
 
+The luhn sum of a valid credit card number is a multiple of 10
+```python
+def split(n):
+    return n// 10, n %10 # ex. 3, 2 = split(32)
+def sum_digits(n):
+    """Return the sum of the digits of positive integer n"""
+    if n < 10:
+        return n
+    else:
+        all_but_last, last = split(n) # n// 10, n %10
+        return sum_digits(all_but_last) + last # adding the partial sum, which is the sum of the digits themselves
+def luhn_sum(n):
+    if n < 10:
+        return n
+    else:
+        all_but_last, last = split(n)
+        return luhn_sum_double(all_but_last) + last
+        
+def luhn_sum_double(n):
+    all_but_last, last = split(n)
+    luhn_digit = sum_digits(2*last) # double the digit
+    if n < 10:
+        return luhn_digit
+    else: 
+        return luhn_sum(all_but_last) + luhn digit
 
 ```
 ### Verifying Recursive Functions
