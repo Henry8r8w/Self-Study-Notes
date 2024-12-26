@@ -1,5 +1,5 @@
 
-### Rule of hog:
+### Rules of hog:
 - Each player has a goal of reaching its score to 100
 - Each player can roll less than 10 number of dices
 - There are risks in rolling many dices
