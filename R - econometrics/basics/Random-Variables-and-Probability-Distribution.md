@@ -306,10 +306,14 @@ $$\overline{Y} \sim \mathcal{N}(\mu, \sigma^2)$$
 
 ### Computing Probabilities Involving Normal Random Variables
 
-The bivariate normal probability density function is given by:  
+The bivariate normal probability density function is given by: 
+
 $$g_{X,Y}(x, y) = \frac{1}{2\pi \sigma_X \sigma_Y \sqrt{1 - \rho_{XY}^2}}
 \exp \left(-\frac{1}{2(1 - \rho_{XY}^2)} \left[\left(\frac{x - \mu_X}{\sigma_X}\right)^2- 2 \rho_{XY} \left(\frac{x - \mu_X}{\sigma_X}\right) \left(\frac{y - \mu_Y}{\sigma_Y}\right) + \left(\frac{y - \mu_Y}{\sigma_Y}\right)^2\right]\right)$$
 
 The joint density of uncorrelated ($\rho_{XY} = 0$) standard normal
-variables simplifies to:  
-$$g_{X,Y}(x, y) = \frac{1}{2\pi} \cdot \exp\left\{-\frac{1}{2} \left[x^2 + y^2\right]\right\}$$
+variables simplifies to: 
+
+$$
+g_{X,Y}(x, y) = \frac{1}{2\pi} \cdot \exp \left\{-\frac{1}{2} \left[x^2 + y^2\right]\right\}
+$$
