@@ -83,6 +83,6 @@ print(123)- casade( n: 123 )
 print(12) - cascade(n:123 // 10)
 print(1)
 print(cascade(n:12)) # now remove the cascade(n = 12)
-print(cascade(n:123)) # now remove the cascade(n = 12)
+print(cascade(n:123)) # now remove the cascade(n = 123)
 '''
 ```
