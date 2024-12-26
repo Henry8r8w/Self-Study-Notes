@@ -1,6 +1,6 @@
 ---
 title: "Random Variables and Probability Distribution"
-output: html_document
+output: rmarkdown::github_document
 date: "2024-11-24"
 ---
 ### Chi-Squared Distribution
