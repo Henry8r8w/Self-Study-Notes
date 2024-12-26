@@ -24,7 +24,7 @@ def sum_digits_rec(n, digit_sum):
     else:
         n, last = split(n)
         return sum_digits_rec(n, digit_sum + last)
-# notice how the arguments in the recursive call are the updated assignments in the iterative method
+# notice how the arguments in the recursive call are the updated assignments (states) in the iterative method
 ```
 
 
