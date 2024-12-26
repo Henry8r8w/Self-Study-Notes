@@ -1,0 +1,272 @@
+---
+title: "Random Variables and Probability Distribution"
+output: html_document
+date: "2024-11-24"
+---
+### Chi-Squared Distribution
+
+### Computing Probabilities Invovling Normal Random Variables
+Joint Distribution
+- Condition Expectation function: $E(Y \mid X) = E(Y) + \rho \frac{\sigma_Y}{\sigma_X} \left(X - E(X)\right)$
+
+The bivariate normal probability density function is given by:
+$$
+g_{X,Y}(x, y) = \frac{1}{2\pi \sigma_X \sigma_Y \sqrt{1 - \rho_{XY}^2}}
+\cdot \exp \left\{
+-\frac{1}{2(1 - \rho_{XY}^2)} 
+\left[
+\left(\frac{x - \mu_X}{\sigma_X}\right)^2
+- 2 \rho_{XY} \left(\frac{x - \mu_X}{\sigma_X}\right) \left(\frac{y - \mu_Y}{\sigma_Y}\right)
++ \left(\frac{y - \mu_Y}{\sigma_Y}\right)^2
+\right]
+\right\}.
+$$
+
+The Equation contains the bivariate normal PDF. It is somewhat hard to gain insights from this complicated expression. Instead, let us consider the special case where $X$ and $Y$ are uncorrelated (p_xy = 0) standard normal random variables with densities $f_X(x)$ and $f_Y(y)$ with joint normal distribution. We then have the parameters:
+
+$$
+\sigma_X = \sigma_Y = 1, \quad \mu_X = \mu_Y = 0 \quad (\text{due to marginal standard normality}) \quad \text{and} \quad \rho_{XY} = 0 \quad (\text{due to independence}).
+$$
+
+The joint density of $X$ and $Y$ then becomes:
+
+$$
+g_{X,Y}(x, y) = f_X(x) f_Y(y) = \frac{1}{2\pi} \cdot \exp\left\{-\frac{1}{2} \left[x^2 + y^2\right]\right\}, \quad \text{(2.2)}.
+$$
+
+
+```{r}
+pnorm(4, mean = 5, sd = 5) - pnorm(3, mean = 5, sd = 5) # N(\mu = 5, \sigma^2 = 25), P(3 <= Y<=4)
+```
+Suppose $\overline{Y}$ is normally distributed with mean $\mu$ and variance $\sigma^2$:
+
+$$\overline{Y} \sim \mathcal{N}(\mu, \sigma^2)$$
+
+Then $\overline{Y}$ is standardized by subtracting it from its mean and then dividing it by standard deviation:
+$$Z = \frac{\overline{Y} - \mu}{\sigma}.$$
+Let $c_1$ and $c_2$ denote two numbers whereby $c_1 < c_2$ and further
+
+$$d_1 = \frac{c_1 - \mu}{\sigma} \quad \text{and} \quad d_2 = \frac{c_2 - \mu}{\sigma}.$$
+
+Then
+$$P(Y \leq c_2) = P(Z \leq d_2) = \Phi(d_2),$$
+$$P(Y \geq c_1) = P(Z \geq d_1) = 1 - \Phi(d_1),$$
+$$P(c_1 \leq Y \leq c_2) = P(d_1 \leq Z \leq d_2) = \Phi(d_2) - \Phi(d_1)$$
+### Normal Distribution
+```{r}
+# compute the probability
+1 - 2 * (pnorm(-1.96)) 
+```
+A commonly known result is that 95% probaility mass of standard normal distribution lies in the interval [-1.96, 1.96] in a distance of about 2 standard deviations to the mean
+$$P(-1.96 \leq Z \leq 1.96) = 1 - 2 \cdot P(Z \leq -1.96)$$
+
+```{r}
+f<-function(x){
+  1/(sqrt(2*pi))*exp(-0.5*x^2)
+}
+# define a vector of reals
+quants <- c(-1.96, 0, 1.96)
+
+# compute densities
+f(quants)
+#> [1] 0.05844094 0.39894228 0.05844094
+
+# compare to the results produced by 'dnorm()'
+f(quants) == dnorm(quants)
+
+# integrate f()
+integrate(f, 
+          lower = -Inf, 
+          upper = 1.337) # 0.9093887 with absolute error < 1.7e-07; prob of observing 1.337 is 90.94%
+pnorm(1.337) # p-norm performs the cdf; it should have the same reuslt as the integrated outcome
+```
+
+```{r}
+# draw a plot of the N(0,1) PDF
+curve(dnorm(x),
+      xlim = c(-3.5, 3.5),
+      ylab = "Density", 
+      main = "Standard Normal Density Function") 
+# compute density at x=-1.96, x=0 and x=1.96
+dnorm(x = c(-1.96, 0, 1.96))
+
+# plot the standard normal CDF
+curve(pnorm(x), 
+      xlim = c(-3.5, 3.5), 
+      ylab = "Probability", 
+      main = "Standard Normal Cumulative Distribution Function")
+
+
+```
+$$\phi(c) = \Phi'(c), \Phi(c) = P(Z \leq c), Z ~N(0,1)$$
+$$N(\mu, \sigma ^2), \text{where mu is 0 and simga is 1}$$
+$$f(x) = \frac{1}{\sqrt{2\pi \sigma}}exp^{-(x-\mu)^2 / (2\sigma^2)}$$
+```{r}
+f <- function(x){
+  1/ sqrt(2*pi)*exp(-0.6 *x^2)
+}
+```
+### Probability Distribution of Continous Random Variables
+- Common distribution  encountered in econometrics are the normal, chi-squared, Student  
+t and F distributions
+- In R
+  - d for “density” - probability function / probability density function
+  - p for “probability” - cumulative distribution function
+  - q for “quantile” - quantile function (inverse cumulative distribution function)
+  - r for “random” - random number generator
+  
+Thus, for the normal distribution we have the R functions dnorm(), pnorm(), qnorm() and rnorm().
+
+```{r}
+# To compute the integrals, we can define a function(x) and use integrate
+f <- function(x) 3 / x^4
+g <- function(x) x * f(x)
+h <- function(x) x^2 * f(x)
+print()
+# compute E(X)
+EX <- integrate(g,
+                lower = 1,
+                upper = Inf)$value # $value allow us to extract the object from the list
+EX
+
+# compute Var(X)
+VarX <- integrate(h,
+                  lower = 1,
+                  upper = Inf)$value - EX^2 
+VarX
+
+```
+ex.
+$$f_X(x) = \frac{3}{x^4}, x >1$$
+$$\rightarrow \int f_X(x)dx = \int^{\infty}_{1} \frac{3}{x^4}dx = lim_{t\rightarrow \infty} \int^{t}_{1}\frac{3}{x^4}dx = lim_{t\rightarrow}-x^{-3}|^t_{x=1} = -(lim_{t\rightarrow \infty}\frac{1}{t^3}-1) = 1$$
+$$ E(X) = \int_1^\infty x \cdot f_X(x) dx = \int_1^\infty x \cdot \frac{3}{x^4} dx = -\frac{3}{2} x^{-2} \Big|_{x=1}^\infty
+= -\frac{3}{2} \left( \lim_{t \to \infty} \frac{1}{t^2} - 1 \right) = \frac{3}{2}$$
+
+$$ \text{Var}(X) = E(X^2) - E(X)^2 = 3 - (3/2)^2 = 3/4$$
+$$\int_1^\infty x^2 \cdot f_X(x) dx = \int_1^\infty x^2 \cdot \frac{3}{x^4} dx
+ = -3x^{-1} \Big|_{x=1}^\infty =  -3 \left( \lim_{t \to \infty} \frac{1}{t} - 1 \right) = 3$$
+
+
+
+
+Continuous version of PMF (PDF), discrete expected value, and discrete variance
+
+$$P(a \leq Y \leq b) = \int^{b}_{a} f_Y(y) dy$$
+$$E(Y) = \mu_Y = \int yf_y(y)dy$$
+$$Var(Y) = \sigma^2_Y = \int (y-\mu_Y)^2f_Y(y)dy$$
+
+### Variance and Standard Deviation
+Sampling variance (possible to achieve in reality):
+- Measures how the n observations in the sample are dispersed around the sample average 
+- s^2 is not equla to Var(Y) ($1/N \sum^{N}_{i =1} (y_i - \mu_Y)^2$) which can be verified by comparing $1/6 \sum^{6}_{i =1} (d_i - 3.5)^2 = 29.2$ to var(1:6) = 3.5
+$$s_Y^2 = \frac{1}{n-1}\sum^{n}_{i =1}(y_i - \bar{y})^2$$
+
+Population variance (impossible in reality to achieve the sampling):
+
+$$\sigma_y^2 = Var(Y) = E[(Y - \mu_y)^2] = \sum^{k}_{i =1}(y_i -\mu_y)^2 p_i$$
+### Expected Value, Mean and Variance
+```{r}
+# set seed for reproducibility
+set.seed(1)
+
+# mean(rolling a dice three times in a row) (with replacement = True)
+mean(sample(1:6, 3, replace = T))
+
+# mean(rolling a dice 1000 times in a row) (with replacement = True); should observe a result close to 3.5
+mean(sample(1:6, 1000, replace = T))
+
+# compute mean of natural numbers from 1 to 6
+mean(1:6)
+
+```
+$$ E(Y) = y_1p_1,...y_kp_k = \sum^{k}_{i=1}y_ip_i$$ 
+ex.
+$$ E(D) = 1 \cdot1/6 +...6 \cdot 1/6 = 3.5$$
+
+### Bernoulli Trials
+```{r}
+# vector of all possible outcomes
+k <- 0:10
+
+
+prob_pdf <- dbinom(x = k,size = 10, prob = 0.5)
+
+# plot the outcomes against their probabilities
+plot(x = k, 
+     y = prob_pdf,
+     ylab="Probability",
+     main = "Probability Distribution Function",
+     pch=20)
+
+prob_cdf <- pbinom(q = k, size = 10, prob = 0.5)
+# plot the cumulative probabilities
+plot(x = k, 
+     y = prob_cdf,
+     ylab="Probability",
+     main = "Cumulative Distribution Function",
+     pch=20) 
+
+```
+
+```{r}
+# compute P(4 <= k <= 7) using 'pbinom()', which calculates the CDF
+pbinom(size = 10, prob = 0.5, q = 7) - pbinom(size = 10, prob = 0.5, q = 3) 
+#> [1] 0.7734375
+```
+
+```{r}
+# compute P(4 <= k <= 7) using 'sum of dbinom()'
+sum(dbinom(x = 4:7, size = 10, prob = 0.5))
+
+# P(k = 5| n = 10, p = 0.5)
+dbinom(x = 5,  # dbinom gets the probability mass function (prob. of specific number of successes)
+       size = 10,
+       prob = 0.5) 
+# let k denote head, then we know the probability of observing head 5 times in the 10 tosses is about 24.6%
+
+```
+$$k ~ B(n,p)$$
+
+$$f(k) = P(k) = \binom{n}{k} \cdot p^k \cdot (1-p)^{n-k} = \frac{n!}{k!(n-k)!} \cdot p^k \cdot (1-p)^{n-k}$$
+```{r}
+# Simulation of coin tossing outcome
+sample(c('H', 'T'), 1)
+```
+
+
+
+### Probability Distribution of Discrete Random Variable
+```{r}
+# generate the vector of probabilities
+probability <- rep(1/6, 6) # rep() stands for replicate
+
+# plot the probability distribution (discrete: PMF/ continous: PDF)
+plot(probability,
+     xlab = 'outcomes',
+     ylab = 'probability',
+     main = 'probability distribution',
+     pch = 20) # pch stands for plotting symbols 
+
+# generate the vector of cumulative probabilities 
+cum_probability <- cumsum(probability) 
+
+# plot the cumulitive probability distribution
+plot(cum_probability, 
+     xlab = "outcomes", 
+     ylab="cumulative probability",
+     main = "cumulative probability distribution",
+     pch=20) 
+```
+The **probability distribution (PDF)** of a discrete random variable is the list of all possible values of the variable and their probabilities that sum to  
+
+The **cumulative probability distribution (CDF)** function gives the probability that the random variable is less than or equal to a particular value.
+
+Example:
+PDF
+- 1:1/6, ... 6: 1/6
+CDF
+- 1:1/6, 2:2/6, 3:3/6,4:4/6, 5:5/6,6:6/6
+```{r}
+sample(1:6, size =1 ) # 1 random sampling given a sample space of {1,2,3,4,5,6}
+
+```

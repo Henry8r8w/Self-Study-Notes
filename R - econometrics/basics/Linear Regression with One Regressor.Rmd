@@ -1,0 +1,214 @@
+---
+title: "Linear Regression with One Regressor"
+output: html_document
+date: "2024-11-24"
+---
+
+```{r}
+library(AER)
+library(MASS)
+```
+### The Least Squares Assumptions
+Assumption 2: Independently and Identically Distributed Data
+```{r}
+# set seed
+set.seed(123)
+
+# generate a date vector
+Date <- seq(as.Date("1951/1/1"), as.Date("2000/1/1"), "years")
+
+# initialize the employment vector
+X <- c(5000, rep(NA, length(Date)-1))
+
+# generate time series observations with random influences
+for (t in 2:length(Date)) {
+  
+    X[t] <- -50 + 0.98 * X[t-1] + rnorm(n = 1, sd = 200)
+    
+}
+
+#plot the results; notice how number of employees cannot be independent in this example
+plot(x = Date, 
+     y = X, 
+     type = "l", 
+     col = "steelblue", 
+     ylab = "Workers", 
+     xlab = "Time",
+     lwd=2)
+```
+Assumption 1: The Error Term has Conditional Mean of Zero (E(u) = 0)
+```{r}
+# set a seed to make the results reproducible
+set.seed(321)
+
+# simulate the data 
+X <- runif(50, min = -5, max = 5) # generates uniformly distributed random numbers of regressand on interval [-5,5]
+u <- rnorm(50, sd = 1)  # generates normally distributed random numbers of error with mean of 0 and variance of 1
+
+# the true relation  
+Y <- X^2 + 2 * X + u                
+
+# estimate a simple regression model 
+mod_simple <- lm(Y ~ X)
+
+# estimate a quadratic regression model
+mod_quadratic <- lm( Y ~ X + I(X^2)) # I() asis function ensure that X^2 does not act as an interaction term (ex. Y ~ A+B +A^2 -> Y ~ A+ B + A:B; mathematically: Y = \beta_0 + \beta_1 A+ \beta_2 B + \beta_3(A\cdot B)+ e)
+
+# predict using a quadratic model 
+prediction <- predict(mod_quadratic, data.frame(X = sort(X))) # sort() ensure X is in increasing order before passing to prediction
+
+# plot the results
+plot( Y ~ X, col = "black", pch = 20, xlab = "X", ylab = "Y")
+abline( mod_simple, col = "blue",lwd=2)
+#red line = incorrect linear regression (this violates the first OLS assumption)
+lines( sort(X), prediction,col="red",lwd=2)
+legend("topleft", 
+       legend = c("Simple Regression Model", 
+                  "Quadratic Model"),
+       cex = 1,# character expansion; defines the dots stuff
+       lty = 1,# line type
+       col = c("blue","red"))
+
+
+```
+
+$$Y_i = \beta_0+\beta_1 X_i + u_i, i = 1,...,n$$
+1. The error term $u_i$ has conditional mean zero given $X_i$
+2. $(X_i, Y_i), i = 1, ..., n$ are independent and identically distributed (i.i.d.) draws from their joint distribution
+3. Large outliers are unlikely:$X_i$ and $Y_i$ have nonzero finite fourth moment
+### Standard Error of the Regression
+Standard Error of the Regression (SER)
+-Measures the magnitude of a typical deviation from the regression line, i.e., the magnitude of a typical residual
+- The unit of the SER is the same as the unit of the dependent variable
+```{r}
+model1 <-lm(score~ STR, data = CASchools)
+model1_summary <- summary(model1) #note that we should see multiple R-squared with 0.05123, which denotes a 5.1% variance on the depedent variable score explained by STR; note also that 18.58 SER denotes the amount of score that was on average of the deviation
+
+model1_summary
+
+# compute R^2 manually
+SSR <- sum(mod_summary$residuals^2)
+TSS <- sum((score - mean(score))^2)#note how in R, everythin gis perforemd with vector operation
+R2 <- 1 - SSR/TSS
+R2
+
+
+# compute SER manually
+n <- nrow(CASchools)
+SER <- sqrt(SSR / (n-2))
+SER
+
+```
+$$ SER = s_{\hat{u}} = \sqrt{s_{\hat{u}}^2} \quad \text{where} \quad s_{\hat{u}}^2 = \frac{1}{n-2} \sum_{i=1}^n \hat{u}_i^2 = \frac{\text{SSR}}{n-2}.
+$$
+
+### Measure of Fit
+$$\text{ESS} = \sum_{i=1}^n \left( \hat{Y}_i - \overline{Y} \right)^2,$$
+
+$$\text{TSS} = \sum_{i=1}^n \left( Y_i - \overline{Y} \right)^2,$$
+$$R^2 = \frac{\text{ESS}}{\text{TSS}}.$$
+$$R^2 = 1 - \frac{\text{SSR}}{\text{TSS}}\text{, range: [0,1]}$$
+$$\text{SSR} = \sum_{i=1}^n \hat{u}_i^2.$$
+
+### The Ordinary Least Squares Estimator
+The OLS estimators of the slope $\beta_1$ and the intercept $\beta_0$ in the simple linear regression model are
+
+$$\hat{\beta}_1 = \frac{\sum_{i=1}^n (X_i - \overline{X})(Y_i - \overline{Y})}{\sum_{i=1}^n (X_i - \overline{X})^2},$$
+
+$$\hat{\beta}_0 = \overline{Y} - \hat{\beta}_1 \overline{X}.$$
+
+The OLS predicted values $\hat{Y}_i$ and residuals $\hat{u}_i$ are
+
+$$\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i,$$
+
+$$\hat{u}_i = Y_i - \hat{Y}_i.$$
+```{r}
+attach(CASchools) # allows to use the variables contained in CASchools directly
+# compute beta_1_hat
+beta_1 <- sum((STR - mean(STR)) * (score - mean(score))) / sum((STR - mean(STR))^2)
+
+# compute beta_0_hat
+beta_0 <- mean(score) - beta_1 * mean(STR)
+
+beta_1
+beta_0
+
+model1 <-lm(score~ STR, data = CASchools)
+model1
+
+plot(score ~ STR, 
+     data = CASchools,
+     main = "Scatterplot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)",
+     xlim = c(10, 30),
+     ylim = c(600, 720))
+
+# add the regression line
+abline(model1) 
+```
+
+
+### Estimating the Coefficients of the Linear Regression Model
+```{r}
+# import California School data set (CASchools) that comes from AER pacakge
+data(CASchools)
+# check the class of the object CASchools
+class(CASchools)
+# check the strucutre of the object CASchools
+str(CASchools)
+#check the head columns of the CASchools
+head(CASchools)
+
+# compute STR
+CASchools$STR <- CASchools$students/CASchools$teachers
+
+# compute TestScore and append it to CASchools
+CASchools$score <- (CASchools$read + CASchools$math)/2
+
+# compute sample averages of STR and score
+avg_STR <- mean(CASchools$STR) 
+avg_score <- mean(CASchools$score)
+
+# compute sample standard deviations of STR and score
+sd_STR <- sd(CASchools$STR) 
+sd_score <- sd(CASchools$score)
+
+# set up a vector of percentiles and compute the quantiles 
+quantiles <- c(0.10, 0.25, 0.4, 0.5, 0.6, 0.75, 0.9) # note 0.5 quantile denote median
+quant_STR <- quantile(CASchools$STR, quantiles)
+quant_score <- quantile(CASchools$score, quantiles)
+
+DistributionSummary <- data.frame(Average = c(avg_STR, avg_score),
+                                  StandardDeviation = c(c(sd_STR, sd_score)),
+                                  quantile = rbind(quant_STR, quant_score) #row binding
+                                  )
+DistributionSummary
+# plot the student-teacher ratio to test score; notice how the points are scattered and forms negative correlation
+plot(score ~ STR, 
+     data = CASchools,
+     main = "Scatterplot of Test Score and STR", 
+     xlab = "STR (X)",
+     ylab = "Test Score (Y)")
+# verify if correlation is negative or not
+cor(CASchools$STR, CASchools$score)
+```
+### Simple Linear Regression
+General form:
+
+$$Y = b\cdot X + a$Y_i = \beta_0 + \beta_1X_i + e_i$$
+  - Y: dependent variable, regressand, or left-hand variable
+
+Guess: $\text{TestScore} = 713 - 3 \cdot \text{STR}$
+
+```{r}
+# We want to observe the relationship between student-teacher ratios (STR) and test score
+STR <- c(15, 17, 19, 20, 22, 23.5, 25)
+TestScore <- c(680, 640, 670, 660, 630, 660, 635) 
+
+# create a scatterplot of the data
+plot(TestScore ~ STR,ylab="Test Score",pch=20)
+
+# add the systematic relationship to the plot
+abline(a = 713, b = -3)
+```
