@@ -2,9 +2,9 @@ Source: https://courses.cs.washington.edu/courses/cse369/24au/schedule.html
 
 ### Practice Problem
 Simplify $X = \overline{A+B} + A\overline{B} + \overline{CD}$
-- By Degmorgan -> $\overline{AB} + A\overline{B} + \overline{CD}$
-- By distribution of NOT(B) and X dot NOT(X) law -> $\overline{B} + \overline{C+D}$
-- By Demorgan -> $\overline{B(C+D)}$
+- By DegMorgan $\to\overline{AB} + A\overline{B} + \overline{CD}$
+- By distribution of NOT(B) and X dot NOT(X) law $\to\overline{B} + \overline{C+D}$
+- By DeMorgan $\to\overline{B(C+D)}$
 Then, implement the cirucit with NAND gates
 1. NAND((C OR D) B)
 2. NAND((NAND(NOT(C) NOT(D))) B)
@@ -106,8 +106,10 @@ Now, to prove $(A+B)\cdot (\overline{A}+ \overline{B}) = \overline{A}B + \overli
 $\text{Carry: } A \cdot B \quad \text{Sum: } A \oplus B$
 
 ### Logic Names and Symbols
-pass### CL General Forms
-a->; b ->; c ->; d -> [F] -y->
+pass
+
+### CL General Forms
+$a \to; b \to; c \to; d \to [F] -y \to$
 - 4 inputs (abcd) into F system with a single output (y)
 - 2^4 F(a,b,c,d) combinations will exist 
 ### Example: Simple Car Electronics
@@ -116,7 +118,7 @@ a->; b ->; c ->; d -> [F] -y->
 - High Beam INdicator (Lights On, High Beam On)
 	- HBL = LO $\cdot$ HBO = LO AND HBO
 - Seat Belt Light (Driver Belt In, Passenger Belt In, Passenger)
-	- SBL = $\overline{\text{DBI}} + (P$$\cdot$ $\overline{\text{PBI}}$) = NOT(DBI) + (P $\cdot$ NOT(PBI))
+	- SBL = $\overline{\text{DBI}}$ + (P $\cdot\overline{\text{PBI}}$) = NOT(DBI) + (P $\cdot$ NOT(PBI))
 ### Combinational vs. Sequential Logic
 - CL: 1. Network of logic gates without feedback 2. Outputs are functions only of inputs
 - SL: 1. The presence of feedback introduces the notion of “state” 2. Circuits that can “remember” or store information
