@@ -15,7 +15,7 @@ module guessing_game (
   input  logic [9:0] SW
 );
   logic is_lt, is_eq, is_gt;
-  comparator number_comparator (
+  comparator_decomposed number_comparator (
     .A(SW[2:0]), 
     .B(3'b001),     
     .is_lt(is_lt), 
