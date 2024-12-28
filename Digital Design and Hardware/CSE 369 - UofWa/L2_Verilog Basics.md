@@ -189,4 +189,8 @@ Modules: the 'classes' in Verilog that define blocks
 	- Superset of previous; cleaner and more efficient
 
 ### Practice Question
-- Implement the Boolean expression B(A+C) with the fewest number of a single universal gate
+- Implement the Boolean expression B(A+C) with the fewest number of a single universal gate (NAND)
+	- NAND(NAND(NAND(A_1, A_2), NAND(C_1, C_2)), B)_1, NAND(NAND(A_1, A_2), NAND(C_1, C_2)), B)_2)
+   	- note: self-inserting NAND creates a not gate, which helps us negate A and C for DeMorgan law to apply and cancel NAND to get AND
+ 
+
