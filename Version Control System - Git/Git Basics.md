@@ -185,7 +185,7 @@ build/
 doc/*.txt
 
 # ignore all .pdf files in the doc/ directory and any of its subdirectories
-doc/**/*.pd
+doc/**/*.pdf
 ```
 ### Short Status
 - A command option that gives less wordy status message
