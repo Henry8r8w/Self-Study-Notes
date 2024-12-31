@@ -57,6 +57,58 @@ module basic_reg (q, d, clk);
 	q <= d; 
 endmodule
 ```
+### Critical Path
+- The critical path is the longest delay between any two registers in a
+circuit (Reg - CL - CL - CL - Reg)
+- The clock period must be longer than this critical path, or the signal will
+not propagate properly to that next register
+
+
+### Minimum Delay
+If shortest path to register input is too short, might violate t_{hold}
+constraint
+- Input could change before state is “locked in”
+- Particularly problematic with asynchronous signals
+
+### When can Input Change
+
+When Can the Input Change?
+- When a register input changes shouldn’t violate hold time (t_{hold}) or
+setup time (t_{setup}) constraints within a clock period (t_{period})
+
+- Let t_{input,i} be the time it takes for the input of a register to change for
+the i-th time in a single clock cycle, measured from the CLK trigger:
+	- Then we need t_{hold}  <= t_{input, i} <= t_{period} - t_{setup} for all i
+	- Two separate constraints
+<img src="draw.io/min_delay.png" width="750">
+
+- What is the max frequency of this circuit?
+	- Limited by how much time needed to get correct Next State to Register
+(t_setup constraint)
+	- max_{frequency} = 1/ min{period}
+
+### Model for Synchronous Digital Systems
+Combinational logic blocks separated by registers
+- Clock signal connects only to sequential logic elements
+- Feedback is optional depending on application
+
+Questions:
+- How do we ensure proper behavior?
+- How fast can we run our clock?
+
+### Accumulator: Proper Timing
+Reset signal shown
+
+- X_i and S_{i-1} arrive at adder at different times
+	- S_i  becomes “wrong” temporarily but corrects before
+	register captures its value (before the next clock signal)
+- Avoid input instability around rising edge of CLK
+
+<img src="draw.io/accumulator_propertiming.png" width="750">
+
+### FlipFlop Timing Behavior
+<img src="draw.io/flipflop_behavior.png" width="750">
+
 ### Flip-Flop Timing Terminology 
 - Camera Analogy: non-blurry digital photo
 	- Don’t move while camera shutter is opening
@@ -71,8 +123,9 @@ endmodule
 	- One for every bit in input/output bus width
 - Output Q resets to zero when Reset signal is high during clock trigger
 	- Some extra circuitry required for this
+	
 
-![](PNGs/IMG_0393.PNG)<!-- -->
+<img src="draw.io/register_memory.png">
 
 
 ### State Element: Flip-Flop
@@ -80,7 +133,7 @@ endmodule
 	- On the rising edge of the clock, input d is sampled and transferred to the output q
 	- At all other times, the input d is ignored and the previously sampled value is retained
 
-![](PNGs/IMG_0392.PNG)<!-- -->
+<img src="draw.io/flipflops.png" width="750">
 
 
 ### Accumulator Example
@@ -96,6 +149,6 @@ for (i = 0;i<n; i++)
 
 First Attempt
 
-![](PNGs/IMG_0388.PNG)<!-- -->
+<img src="draw.io/accumulator1.png" width="350">
 
 - This does not work: it does not consider when S = 0 and there is no control on the for loop itself
