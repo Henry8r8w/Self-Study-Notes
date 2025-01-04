@@ -21,6 +21,88 @@ block
 5. Do not make assignments to the same variable from more than one 
 always_* block
 
+### Verilog testbench with Clock
+```systemverilog
+module D_FF_testbench;
+	logic CLK, reset, d;
+	logic q;
+	parameter PERIOD = 100;
+	D_FF dut (.q, .d, .reset, .CLK); // Instantiate the D_FF
+
+	initial 
+		CLK <= 0;
+	always 
+		#(PERIOD/2) CLK<= ~CLK; // Set up clock
+
+	initial begin // Set up signals
+			d <= 0; reset <= 1;
+		@(posedge CLK);
+			reset <= 0;
+		@(posedge CLK); d <= 1;
+		@(posedge CLK); d <= 0;
+		@(posedge CLK); #(PERIOD/4) d <= 1;
+		@(posedge CLK);
+	$stop();// end the simulation
+	end
+endmodule
+```
+<img src="draw.io/tb_waveform_L4.png" width="750">
+
+note: recall that q samples the value of d at positive edge with some delay
+
+### Verilog: Simulated Clock
+For simulation, you need to generate a clock signal:
+	- For entirety of simulation/program, so use always block
+```
+// Explicit edges
+initial
+	clk = 0;
+always begin
+	#50 clk <= 1;
+	#50 clk <= 0;
+end
+
+// Toggled form
+initial
+	clk = 0;
+always
+	#50 clk <= ~clk;
+
+// Toggled form and with a defined period
+parameter period = 100;
+initial
+	clk = 0;
+always
+	#(period/2) clk <= ~clk;
+
+
+```
+### Verilog: Reset Functionality
+Option 1: synchronous reset
+```systemverilog
+module D_FF1 (q, d, reset, clk);
+	output logic q; // q is state-holding
+	input logic d, reset, clk;
+	always_ff @(posedge clk or posedge reset)
+		if (reset)
+			q <= 0; // on reset, set to 0
+		else
+			q <= d; // otherwise pass d to q
+endmodule
+```
+
+Option 2: asynchronous reset
+```systemverilog
+module D_FF1 (q, d, reset, clk);
+	output logic q; // q is state-holding
+	input logic d, reset, clk;
+	always_ff @(posedge clk or posedge reset)
+	if (reset)
+		q <= 0;// on reset, set to 0
+	else
+		q <= d;// otherwise pass d to q
+endmodule
+```
 
 ### Blocking vs. Non blocking
 - Blocking statement (=): statement effects evaluated sequentially
@@ -28,6 +110,13 @@ always_* block
 - Non-blocking statement (<=): statement effects evaluated 'in parallel'
 	- resembles hardware
 
+Nonblocking:
+
+<img src="draw.io/nonblocking.png" width="500">
+
+Blocking:
+
+<img src="draw.io/blocking.png" width="500">
 
 ### Procedural Blocks
 - Always: loop to execute over and over again
@@ -57,6 +146,11 @@ module basic_reg (q, d, clk);
 	q <= d; 
 endmodule
 ```
+The difference between D-flip flop and register
+- D flipflop is a single bit storage unit
+
+- Register is the multiple flipfloper together, a multiple bit storage unit
+
 ### Critical Path
 - The critical path is the longest delay between any two registers in a
 circuit (Reg - CL - CL - CL - Reg)
@@ -104,7 +198,7 @@ Reset signal shown
 	register captures its value (before the next clock signal)
 - Avoid input instability around rising edge of CLK
 
-<img src="draw.io/accumulator_propertiming.png" width="750">
+<img src="draw.io/accumulator_propertiming.png" width="550">
 
 ### FlipFlop Timing Behavior
 <img src="draw.io/flipflop_behavior.png" width="750">
