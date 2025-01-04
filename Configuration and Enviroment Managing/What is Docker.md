@@ -1,5 +1,5 @@
 
-# Docker
+### Docker
 [1]
 #### Docker 101 for Data Scientist
 The components
@@ -68,7 +68,7 @@ There are three ways that R can be added to Docker
 1.Start from a base image that includes R
 FROM rstudio/r-base:3.5-xenial
 2.Include the commands to install R within an image.
-# download a version of R and build from source
+#### download a version of R and build from source
 ```
 # ubuntu dowload
 ARG R_VERSION=3.5.2
