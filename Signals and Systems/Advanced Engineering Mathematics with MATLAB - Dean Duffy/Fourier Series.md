@@ -1,7 +1,7 @@
 
 ### Example 5.1.1
 
-Let  
+Let
 $$
 f(t) =
 \begin{cases}
