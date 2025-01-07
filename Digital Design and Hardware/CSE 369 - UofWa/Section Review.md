@@ -1,3 +1,135 @@
+
+
+## Sec 4 ()
+### Clock in Hardware
+We will use the DE1-SoC’s built-in 50 MHz clock called CLOCK_50.
+- Accessed by adding CLOCK_50 as an input logic to your top-level module.
+
+Because 50 MHz (i.e., clock period = 20 ns) may be too fast for humans, can use **provided** clock_divider module to slow things down.
+- Recommendation: assign extra signal clk to divided_clocks[#].
+- Make sure to comment out clock_divider for simulation!
+
+```systemverilog
+logic [31:0] divided_clocks;
+logic clk;
+clock_divider cdiv (.clock(CLOCK_50), .divided_clocks);
+assign clk = divided_clocks[23]; // replace with = CLOCK_50 for simulation
+// Instantiating a module that is using clock 23
+<module_name> <instance_name> (.clk, .reset, ... );
+```
+
+### Reset Functionality (Revoew)
+- A sequential element often has a reset signal that will drive its output to a known value.
+    - Useful in hardware to substitute for “initialization.”
+
+Synchronous
+```systemverilog
+module D_FF1 (output logic q,
+    input logic d, reset, clk);
+    always_ff @(posedge clk)
+        if (reset)
+            q <= 0;
+    else
+            q <= d;
+endmodule // D_FF1
+```
+
+Asyncrhonous
+```systemverilog
+module D_FF2 (output logic q,
+    input logic d, reset, clk);
+    always_ff @(posedge clk or posedge reset)
+    if (reset)
+        q <= 0;
+    else
+        q <= d;
+endmodule // D_FF2
+# note: treate posedge semantically as the activation itself, instead of its pertain to the rise of clk square signal only
+```
+### Flip-Flops and Registers (Review)
+- A *flip-flop* samples d on triggers and trasnfers its value to q
+```systemverilog
+module basic_D_FF (output logic q, input logic d, clk);
+    always_ff @(posedge clk)
+        q <= d;
+endmodule // basic_D_FF
+```
+- A *register* is a collection of N flip-flops together
+```systemverilog
+module basic_reg #(N) (output logic [N-1:0] Q,
+                            input logic [N-1:0] D,
+                            input logic
+                            clk);
+    always_ff @(posedge clk)
+        Q <= D;
+endmodule // basic_reg
+```
+### New SystemVerilog Commands
+- always_ff – higher-level description of behavior that includes sequential
+logic.
+    - Requires an explicit sensitivity/trigger list (e.g., @(posedge clk)) that dictates when the code block will take eﬀect.
+
+- Non-blocking statements (<=) should be used with always_ff, blocking statements (=) should be used with assign and always_comb.
+
+### Excerise 1
+1. paramaterize comparator.sv (aka. comparator_decomposed.sv) module for both-width N:
+    - hint: use reduction operator (&,~&,~|,|,^,~^ #'bX) to perform # bits input of operation to reduce to 1 or 0
+```systemverilog
+
+module comparator_decomposed #(N = 3)
+            (input  logic [N-1:0] A, B,
+                   output logic is_lt, is_gt, is_eq);
+  // subtraction result (intermediate)
+  logic [N-1:0] sub; // 0-2 bits -> 3 bits
+
+  assign sub = A - B; // == 1 (negative result), == 0 (positive result)
+
+  // 1 denotes true and 0 denotes false for the conditions
+  assign is_eq = ~|sub; // the bus will be all evaluated as one
+  assign is_lt = sub[N-1]; // checking for the largest digit ? 1XX: 0XX
+  assign is_gt = ~is_eq & ~is_lt;
+
+endmodule  
+```
+
+2. Parameterize the guessing_game module for bit-width N and screte number S
+```systemverilog
+module guessing_game #(N = 3, S = 3'd1) (
+  output logic [9:0] LEDR,
+  input  logic [3:0] KEY,
+  input  logic [N-1:0] SW
+);
+  logic is_lt, is_eq, is_gt;
+  comparator_decomposed #(.N(N)) number_comparator (
+    .A(SW[2:0]), 
+    .B(S),     
+    .is_lt(is_lt), 
+    .is_eq(is_eq), 
+    .is_gt(is_gt)
+  );
+  assign LEDR[0] = is_lt & ~KEY[0];
+  assign LEDR[1] = is_eq & ~KEY[0];
+  assign LEDR[2] = is_gt & ~KEY[0];
+endmodule  
+
+# note: not all buses should be parameterized; only user defined input should be paramertized; input can be decimal, binary, or hex (<size>'<base><value>)
+#note: .N() intialized a pass-on input hat is a numerical, having it at the number_comparator allow us to have the fliexbility of user define input -- .N(#) instead of N = # to prevent overriding the parent configuration
+```
+
+
+### New SystemVerilog Commands
+Parameterized modules:
+- defintion: module <name> # (<param list>) (<port list>);
+    - the <param list> is comma seperated and can have default values (e.g. #(M ,N = 4))
+- Instantiation: <name> # (<param>) <inst_name> (<ports>);
+    - notice how the parameter defintion are to the left of the instance names
+    - Youa re bale to gerate user-defined version of the same module definition(alike to the tempaltes in C++)
+
+parameter – create a symbolic constant for a value that can be
+referenced in scope.
+- Like #define in C/C++.
+- Useful for things like timing constants, state names, module widths
+
 ## Sec3 (seg7_tb.sv)
 
 ### Test Bench for Combinational Logic
