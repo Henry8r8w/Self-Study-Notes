@@ -2,4 +2,4 @@
 *.Rhistory
 TODO
 **/*tmp*/ 
-
+*.pyc

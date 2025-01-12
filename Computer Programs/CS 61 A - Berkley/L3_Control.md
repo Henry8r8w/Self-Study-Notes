@@ -42,7 +42,7 @@ def divide_exact(n,d = 10):
 q, r = devide_exact(2013)   # python knows that d is 10
 
 ```
-- It is a common practice to write doc string and test it with python3 -m doctest -v yourscript.py where if you gave a wrongly expected output, your doctest will tell you so. It's something to tryout during homework problems. FYI: without -v, there will be no visual dispaly, but if nothing appear, that still mean the function works
+- It is a common practice to write doc string and test it with python3 -m doctest -v yourscript.py where if you gave a wrongly expected output in the string itself, your doctest will tell you so. It's something to tryout during homework problems. FYI: without -v, there will be no visual dispaly, but if nothing appear, that still mean the function works
 ```python
 def divide_exact(n,d):
     """Return the quotietn adn the remainder of diviing N by D
