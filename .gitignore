@@ -1,5 +1,16 @@
+# General Ignore
 *.obsidian
 *.Rhistory
 TODO
 **/*tmp*/ 
 *.pyc
+**/Lecture Reference/*
+
+
+
+
+# Ignore to clean the directory
+**/*61 A*/homeworks/*
+!**/*61 A*/homeworks/hw02.py
+
+
