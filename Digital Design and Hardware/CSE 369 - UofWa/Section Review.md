@@ -1,6 +1,127 @@
 
 
 ## Sec 4 ()
+### Excercise 3
+Create a test bench for string_lights and simulate it in ModelSim.
+
+Question to ask yourself:
+- Do you need this test bench to be thorough? What would be enough to convince you that it is working properly?
+- What do you think the best combination of signals (and radices) are to use for the reader of your simulation?
+    - e.g., do you want to show the top-level SW[9] signal or an internal reset signal?
+
+```systemverilog
+module string_lights_tb();
+    logic [9:0] LEDR;
+    logic [3:0] KEY;
+    logic [9:0] SW;
+
+    // wire conenction
+    string_lights dut (.*);
+
+    // clock generation
+    parameter T = 100;
+    initial
+        KEY[0] = 1'b1;
+    always begin
+        #(T/2) KEY[0] <= 1'b0;
+        #(T/2) KEY[0] <= 1'b1;
+    end
+
+    initial begin
+    SW[0] <= 1'b0; SW[9] <= 1'b1; @(negedge KEY[0]); // reset
+    SW[0] <= 1'b0; SW[9] <= 1'b0; @(negedge KEY[0]); // 0
+    SW[0] <= 1'b1;                @(negedge KEY[0]); // 1
+    ... // finish desired pattern
+                                  @(negedge KEY[0]); // final delay
+    $stop;
+    end
+ end
+endmodule 
+```
+### Sequeantial Test Bench Notes
+- You need to manually track the state change for sequential elements
+- all input should be 0 at t = 0 to elimnate the unesseary red lines in  simulation
+- `initial` block doesn't matter but it recomemdn to be consistnet (lin up delays on  right or left side of each line)
+- All logic delay set to o to your ModelSim Setup, so do note that you should not expect any delay in your signal when interpetating your result
+- you may incllude an extra delay at the end of your smiulation to see the effects of your last input changes
+
+### Edge-Sensitive Delays
+- Delay until specified transition on signal: @(<pos/negedge> signal);
+
+Example testbench
+```systemverilog
+initial begin
+    d <= 1'b1; reset <= 1'b1; @(posedge clk); // reset
+               reset <= 1'b0; @(posedge clk); // store 1
+                              @(posedge clk); // hold 1
+    d <= 1'b0;                @(posedge clk); // store 0
+                              @(posedge clk); // hold 0
+    $stop();
+end
+```
+### Clock Generation (Review)
+2 optoins: explicit edges vs toggle
+```systemverilog
+// explicit edge
+parameter T = 100; // period
+initial
+    clk = 0;
+always begin
+    #(T/2) clk <= 1;
+    #(T/2) clk <= 0;
+end
+
+// toggle
+parameter T = 100; // period
+initial
+    clk = 0;
+always
+    #(T/2) clk <= ~clk;
+
+```
+### Excercise 2
+Write a module called string_lights that implements the system
+shown below (a string of 10 flip-flops/1-bit registers tied to the LEDRs) for the DE1-SoC.
+![alt text](10_dff.png)
+- SW[0] is the rest; SW[9] is IN, and ~KEY[0] is the clk
+
+
+```systemverilog
+# via ports and call a D_FF1 that you define
+module string_lights (output logic [9:0] LEDR,
+    input logic [3:0] KEY,
+    input logic [9:0] SW);
+
+    logic clk, reset, in;
+
+    assign clk = ~KEY[0];
+    assign reset = SW[9];
+    assign in = SW[0];
+
+    D_FF1 ff9 (.q(LEDR[9]), .d(in), .reset, .clk);
+    D_FF1 ff8 (.q(LEDR[8]), .d(LEDR[9]), .reset, .clk);
+    ...
+    D_FF1 ff1 (.q(LEDR[1]), .d(LEDR[2]), .reset, .clk);
+    D_FF1 ff0 (.q(LEDR[0]), .d(LEDR[1]), .reset, .clk);
+endmodule // string_lights
+
+# using always_ff
+module string_lights (output logic [9:0] LEDR,
+    input logic [3:0] KEY,
+    input logic [9:0] SW);
+    logic clk, reset, in;
+    assign clk = ~KEY[0];
+    assign reset = SW[9];
+    assign in = SW[0];
+    always_ff @(posedge clk)
+    if (reset)
+        LEDR <= 10'd0; // remember that 10d'0 initate a decimal (base 10) of 0
+    else
+        LEDR <= {in, LEDR[9:1]}; // 10dXXXXXXXX combinations will switched along with 
+endmodule // string_lights
+
+
+```
 ### Clock in Hardware
 We will use the DE1-SoC’s built-in 50 MHz clock called CLOCK_50.
 - Accessed by adding CLOCK_50 as an input logic to your top-level module.
@@ -115,6 +236,8 @@ endmodule
 # note: not all buses should be parameterized; only user defined input should be paramertized; input can be decimal, binary, or hex (<size>'<base><value>)
 #note: .N() intialized a pass-on input hat is a numerical, having it at the number_comparator allow us to have the fliexbility of user define input -- .N(#) instead of N = # to prevent overriding the parent configuration
 ```
+
+
 
 
 ### New SystemVerilog Commands
