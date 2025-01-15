@@ -119,8 +119,6 @@ module string_lights (output logic [9:0] LEDR,
     else
         LEDR <= {in, LEDR[9:1]}; // 10dXXXXXXXX combinations will switched along with 
 endmodule // string_lights
-
-
 ```
 ### Clock in Hardware
 We will use the DE1-SoC’s built-in 50 MHz clock called CLOCK_50.
