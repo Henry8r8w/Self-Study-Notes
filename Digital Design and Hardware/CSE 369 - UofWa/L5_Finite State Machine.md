@@ -1,19 +1,74 @@
+### FSMs in Verilg
+FSMs follow a very particular organizational structure:
 
-### Example: Buggy 3 Ones FSM
-States: s0, s1, s2
-Initial State: s0
-Tansitions of form: input/ output
+
+They can be implemented using the following design pattern:
+1. Define states and state variables
+2. Next state logic (ns)
+3. Output logic
+4. State update logic (ps)
+
+### FSM: Implementation
+$NS_{1} = PS_0 \cdot In$
+$NS_0 = \overline{PS_1} \cdot \overline{PS_0} \cdot In$
+$Out = PS_1 \cdot In$
+
+To test your FSM, take every transition you care about
+
+### FSM: Combinational Logic vs. Truth Table
+| PS   | In | NS   | Out |
+|------|----|------|-----|
+| 00   | 0  | 00   |  0  |
+|      | 1  | 01   |  0  |
+|------|----|------|-----|
+| 01   | 0  | 01   |  0  |
+|      | 1  | 10   |  0  |
+|------|----|------|-----|
+| 10   | 0  | 00   |  0  |
+|      | 1  | 00   |  1  |
+
 ```mermaid
 stateDiagram-v2
-    [*] --> CLK
-    CLK--> D_FF_1
-    CLK --> D_FF_2
-    D_FF_1--> D_FF_2: Q connects D
-    External --> D_FF_1: External connects D
+    [*] --> S0
+    S0--> S0: 0/0
+    S0--> S1: 1/0
+    S1--> S1: 0/0
+    S0--> S1: 1/0
+    S1--> S2: 1/0
+    S2--> S0: 1/1
+
 ```
 
 
 
+### Hardware Implementation of FSM
+Register holds a representation of the FSM’s state
+- a unique bit pattern will need assign for each state
+- outpu is the present//current state
+- input is next state
+#TODO: add comb implmentation mermaid diagram
+```mermaid
+
+
+
+```
+### Example: Buggy 3 Ones FSM
+States: S0, S1, S2
+Initial State: S0
+Tansitions of form: input / output
+
+This FSM detect 3 consecutive 1's in the input
+```mermaid
+stateDiagram-v2
+    [*] --> S0
+    S0--> S0: 0/0
+    S0--> S1: 1/0
+    S1--> S1: 0/0
+    S0--> S1: 1/0
+    S1--> S2: 1/0
+    S2--> S0: 1/1
+
+```
 
 ## State Diagrams
 
