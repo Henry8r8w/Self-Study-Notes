@@ -1,7 +1,281 @@
+## Sec 5 (vend15.sv, vend15_tb.sv, light_game.sv)
+### Exercise 3
+Create a test bench for vend15 and simulate it in ModelSim
+```systemverilog
+module vend15_tb ();
+  // signal declaration and dut instantiation
+  logic clk, reset, N, D, Q, Open;
+  vend15 dut (.*);
 
+  // clock generation
+  parameter T = 100;
+  initial
+    clk = 1'b0;
+  always begin
+    #(T/2)  clk <= 1'b0;
+    #(T/2)  clk <= 1'b1;
+  end
+
+  initial begin
+    {reset,N,D,Q} <= 4'b1000; @(posedge clk);  // reset
+    {reset,N,D,Q} <= 4'b0000; @(posedge clk);  // Zero (1)
+          {N,D,Q} <= 3'b001;  @(posedge clk);  // Zero (2)
+          {N,D,Q} <= 3'b100;  @(posedge clk);  // Zero (3)
+          {N,D,Q} <= 3'b001;  @(posedge clk);  // Five (4)
+          {N,D,Q} <= 3'b100;  @(posedge clk);  // Zero (5)
+          {N,D,Q} <= 3'b000;  @(posedge clk);  // Five (6)
+          {N,D,Q} <= 3'b010;  @(posedge clk);  // Five (7)
+          {N,D,Q} <= 3'b100;  @(posedge clk);  // Zero (8)
+                              @(posedge clk);  // Five (9)
+          {N,D,Q} <= 3'b001;  @(posedge clk);  // Ten  (10)
+          {N,D,Q} <= 3'b010;  @(posedge clk);  // Zero (11)
+                              @(posedge clk);  // Ten  (12)
+                              @(posedge clk);  // Zero (13)
+          {N,D,Q} <= 3'b100;  @(posedge clk);  // Ten  (14)
+          {N,D,Q} <= 3'b010;  @(posedge clk);  // Zero (15)
+          {N,D,Q} <= 3'b000;  @(posedge clk);  // Ten  (16)
+                              @(posedge clk);  // extra
+    $stop;
+  end
+endmodule  // vend15_tb
+
+// note: we use 15 combination of inputs to test all transitions; there are other number of combinations however
+```
+### FSM Test Bench Example
+```mermaid
+stateDiagram-v2
+    [*] --> S0: Reset
+
+    state "S0 (00)" as S0
+    state "S1 (01)" as S1
+    state "S11 (10)" as S2  
+
+    %S0 Transitions
+    S0 --> S0: 0/0
+    S0 --> S1: 1/0
+
+    %S1 Transitions 
+    S1 --> S0: 0/0
+    S1 --> S2: 1/1
+
+    %S2 Transitions 
+    S2 --> S0: 0/0
+    S2 --> S2: 1/1
+
+```
+
+```systemverilog
+initial begin
+    reset <= 1; w <= 0; @(posedge clk);  // reset
+    reset <= 0;         @(posedge clk);  // remove reset -> curr state: S0
+                w <= 1; @(posedge clk);  // curr state: S0, next state: S1
+                w <= 0; @(posedge clk);  // curr state: S1, next state: S0
+                w <= 1; @(posedge clk);  // curr state: S0, next state: S1
+                        @(posedge clk);  // curr state: S1, next state: S11
+                        @(posedge clk);  // curr state: S11, next state: S11
+                        @(posedge clk);  // curr state: S11, next state: S11
+                w <= 0; @(posedge clk);  // curr state: S11, next state: S0
+                        @(posedge clk);  // curr state: S0 (extra cycle to see the final state, given all states have been visited)
+    $stop;  // pause the simulation
+end
+```
+### FSM Test Bench Notes
+All notes from sequential test bencehs from section 4 still apply
+- Generate a simulated clock (don’t use clock_divider), start with a reset and define all inputs at t=0, add extra delay at end to see the effects of your last 
+input changes.
+- To thoroughly test your FSM, need to take every transition that we care about (can omit/ignore don’t cares).
+- Recommended test bench lines in initial block:
+<input changes> @(posedge clk);  // current state: ???
+- In ModelSim, you should at least add ps to waveforms .
+- Could also include ns or other signals involved in ps/ns computations.
+
+### Exercise 2
+Below is an FSM for a modified vending machine with increased cost of 15 ¢ for gumballs that also accepting quarters (Q: 25¢dollar ); it still does not give change and can only take one coin at a time
+
+```mermaid
+stateDiagram-v2
+    [*] --> S0: Reset
+    state "0¢ (00)" as S0
+    state "5¢ (10)" as S1
+    state "10¢ (11)" as S2
+
+    %% S0 transitions
+    S0 --> S0: ~N~DQ / 1
+    S0 --> S1: N~D~Q / 0
+    S0 --> S2: ~N~D~Q / 0
+
+    %% S1 transitions
+    S1 --> S0: ~ND~Q + ~N~DQ / 0
+    S1 --> S1: ~N~D~Q / 1
+    S1 --> S2: N~D~Q / 1
+
+    %% S2 transitions
+    S2 --> S0: N~D~Q + ~ND~Q + ~N~DQ / 1
+    S2 --> S2: ~N~D~Q / 0
+```
+
+```systemverilog
+module vend15 (
+  input  logic clk, reset,
+  input  logic N, D, Q,   // nickel, dime, quarter
+  output logic Open
+);
+
+  // Encoding: Zero=00, Five=10, Ten=11
+  enum logic [1:0] {Zero, Five=2'b10, Ten=2'b11} ps, ns;
+
+  // Next-state logic
+  always_comb
+  begin
+    case (ps)
+
+      Zero: 
+        case ({N, D, Q})
+          3'b000: ns = Zero; // no coin: stay
+          3'b100: ns = Five; // nickel
+          3'b010: ns = Ten;  // dime
+          3'b001: ns = Zero; // quarter
+          default: ns = ps;  // any other combo
+        endcase
+
+
+      Five: 
+        case ({N, D, Q})
+          3'b000: ns = Five; // no coin: stay
+          3'b010: ns = Zero; // dime -> vend -> go to 0¢
+          3'b001: ns = Zero; // quarter -> vend -> go to 0¢
+          3'b100: ns = Ten;  // nickel -> 10¢
+          default: ns = ps;
+        endcase
+
+
+      Ten:
+        case ({N, D, Q})
+          3'b000: ns = Ten;  // no coin: stay
+          3'b100: ns = Zero; // nickel -> vend -> back to 0¢
+          3'b010: ns = Zero; // dime   -> vend -> back to 0¢
+          3'b001: ns = Zero; // quarter-> vend -> back to 0¢
+          default: ns = ps;
+        endcase
+
+      default: 
+        ns = ps;
+    endcase
+  end
+
+  assign Open = Q | ((ps != Zero) & D) | ((ps == Ten) & N); // 15 being the vend condition
+
+  // State register; asynchronous reset, whenever it is pressed -- interval of clk, which gives us the immediate result
+  always_ff @(posedge clk or posedge reset) begin 
+    if (reset)
+      ps <= Zero;
+    else
+      ps <= ns;
+  end
+
+endmodule
+```
+
+### Exercise 1
+The following FSM represents a Red Light, Green Light game, where a 
+player is only allowed to move forward (M=1) when the light is green (L=1). Here, the player wins (output W=1) after successfully moving twice; moving when the light is red (L=0) results in returning to the start
+```mermaid
+stateDiagram-v2
+    [*] --> Start: Reset
+
+    state "Start (00)" as Start
+    state "Mid (01)" as Mid
+    state "Win (10)" as Win
+
+    %% Start state transitions
+    Start --> Start: NOT(L) + NOT(M) / 0
+    Start --> Mid: L M / 0
+
+    %% Mid state transitions
+    Mid --> Start: NOT(L)NOT(M) / 0
+    Mid --> Mid: NOT(M) / 0
+    Mid --> Win: L M / 1
+
+    %% Win state transitions
+    Win --> Win: NOT(M) / 1
+    Win --> Start: M / 0
+```
+
+```systemverilog
+
+module light_game (input logic clk, reset, M, L, output logic W);
+    enum logic [1:0] { Start = 2'b00, Mid = 2'b01, Win = 2'b10} ps, ns; // [1:0] ensures two bits assignment
+
+    always_comb
+        case (ps)
+            Start: ns = (L & M) ? Mid : Start;
+            Mid:   ns = (L & M) ? Win : (M ? Start : Mid);
+            Win:   ns = M ? Start : Win;
+        endcase
+
+    assign W = (ns == Win);  // alt: ((ps == Mid) & L & M) | ((ps == Win) & ~M)
+
+    always_ff @(posedge clk)
+        if (reset)
+            ps <= Start;
+        else
+            ps <= ns;
+
+endmodule  // light_game
+
+```
+
+
+
+### FSM Design Pattern
+1.  // State Encodings and Variables
+    a. enum to define ps and ns
+2.  // Next State Logic (ns)
+    a. always_comb or assign with blocking assignments (=)
+3.  // Output Logic
+    a. assign or always_comb with blocking assignments (=)
+    b. Mealy-type output example:  assign out = (ps == S1) & in;
+4.  // State Update Logic (ps) - including reset
+    a. always_ff with non-blocking assignments (<=)
+
+### Finite State Machine Implementation
+Module design notes:
+-  Must have a clock input (e.g., clk, clock, 
+CLOCK_50) for sequential elements.
+- Should have a reset input (e.g., rst, reset) for 
+“initialization.”
+- Must have a present state (ps); recommended to also have a next state (ns).
+### New SystemVerilog Commands
+- enum - create an enumerated type with a restricted set of named values
+    - basic usage: enum <original type> {<name_list>} <vars>;
+    - <original type> must be wide enough to support the lenght of <name_list>; if omitted, default to int type
+    - By default, names in the <name_list> are assigned consecutive values starting from 0
+        - can explicitly assign values using name = <value> syntax
+- example: enum logic [1:0] {S0, S1, S11 = 2'b11} ps , ns;
+    - S0 assigned 2'b00, S1 assigned 2'b01
+    - Two variables declared that can only take on the values S0, S1, and S11 (no 2'b10)
+        - note: assignment is done randy if you don't specify them
+
+- Ternary operator - shorthand for an if-else statement using the syntax <cond> > <then>: <else> (same syntax as C)
+    - same syntax as C/C++
+    - Ne ver necessary to use, just results in more compact code
+    - Very useful in combination logic for next state and outout logic
+
+- example:
+```systemverilog
+case (ps)
+  S0:  ns = w ? S1  : S0;
+  S1:  ns = w ? S11 : S0;
+  S11: ns = w ? S11 : S0;
+endcase
+
+// if HEX0 is 1 (SW[0] is pushed to center), assign HEX to leds, else HEX0 is 7'b1111111
+assign HEX0 = SW[0] ? leds : 7'b1111111;
+
+```
 
 ## Sec 4 ()
-### Excercise 3
+### Exercise 3
 Create a test bench for string_lights and simulate it in ModelSim.
 
 Question to ask yourself:
@@ -15,7 +289,7 @@ module string_lights_tb();
     logic [3:0] KEY;
     logic [9:0] SW;
 
-    // wire conenction
+    // wire connection
     string_lights dut (.*);
 
     // clock generation
@@ -41,9 +315,9 @@ endmodule
 ### Sequeantial Test Bench Notes
 - You need to manually track the state change for sequential elements
 - all input should be 0 at t = 0 to elimnate the unesseary red lines in  simulation
-- `initial` block doesn't matter but it recomemdn to be consistnet (lin up delays on  right or left side of each line)
+- `initial` block doesn't matter but it recommend to be consistent (lin up delays on  right or left side of each line)
 - All logic delay set to o to your ModelSim Setup, so do note that you should not expect any delay in your signal when interpetating your result
-- you may incllude an extra delay at the end of your smiulation to see the effects of your last input changes
+- you may incllude an extra delay at the end of your simulation to see the effects of your last input changes
 
 ### Edge-Sensitive Delays
 - Delay until specified transition on signal: @(<pos/negedge> signal);
