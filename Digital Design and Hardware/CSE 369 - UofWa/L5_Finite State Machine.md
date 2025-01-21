@@ -46,7 +46,7 @@ Register holds a representation of the FSM’s state
 - a unique bit pattern will need assign for each state
 - outpu is the present//current state
 - input is next state
-#TODO: add comb implmentation mermaid diagram
+#TODO: add comb implementation mermaid diagram
 ```mermaid
 
 
