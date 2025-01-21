@@ -1,0 +1,75 @@
+
+
+### Source: Clean your data with R. R programming for beginners
+```{r}
+library(tidyverse)
+
+# load pre-installed dataset from tidyverse: starwars
+
+# whole data view
+view(starwars)
+
+# to check the category within the variable 'gender'
+unique(starwars$gender) # [1] feminine masculine na
+
+
+# create a factor class on the gender variable; check the class assignment
+starwars$gender<- as.factor(starwars$gender)
+class(starwars$gender)
+
+# run the unique again, you should see how na is gone and you have two levels: feminine masculine
+unique(starwars$gender) 
+levels(starwars$gender) # levels function allow you look into the masc and fem vars
+
+# you can swap the levels within the factor object by using c(), the concatenation
+starwars$gender <- factor((starwars$gender), levels = c('masculine', 'feminine'))
+
+# view your variables
+names(starwars)
+
+# choose name, height and any variables ends with color as your stdinput for select
+starwars %>% 
+    select(name, height, ends_with("color")) %>%
+    names() # view your selected variables
+# Try to filter out unwanted variables; in our case, only blonde and brown hair_color and height > 180
+starwars %>%
+  select(name, height, ends_with("color")) %>%
+  filter(hair_color %in% c("blond", "brown") & height > 180)
+
+# Remove the missing data
+mean(starwars$height, na.rm = TRUE) # get mean height but remove the na
+
+starwars %>%
+  select(name, gender, hair_color, height)
+starwars %>%
+  select(name, gender, hair_color, height) %>%
+  na.omit() # the na omited version
+
+
+# Select columns and filter for rows that have missing values in *any* of those columns:
+starwars %>%
+  select(name, gender, hair_color, height) %>%
+  filter(!complete.cases(.))
+
+# Explicitly drop NAs in 'height'
+starwars %>%
+  select(name, gender, hair_color, height) %>%
+  filter(!complete.cases(.)) %>% # filter(negating (rows with complete cases/ no NAs))
+  drop_na(height) # but we do drop the NAs in height
+
+# get a new column that replaceed the height na with none
+starwars %>%
+  select(name, gender, hair_color, height) %>%
+  filter(!complete.cases(.)) %>%
+  mutate(hair_color2 = replace_na(hair_color, "none"))
+
+
+# Some df manuevr
+Names <- c("Peter", "John", "Andrew", "Peter")
+Age <- c(22, 33, 44, 22)
+friends <- data.frame(Names, Age) # Name in col1, Age in col2
+friends[!duplicated(friends), ] # deduplicate col1 in friends's df
+
+friends %>% distinct() # dplyr version of dedpulication
+
+```

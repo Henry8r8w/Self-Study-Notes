@@ -1,0 +1,121 @@
+---
+title: "Time Series (TS) Concept -  Intro Computational Finance & Financial Econometrics by Eric Zivot"
+output: html_document
+date: "2025-01-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+suppressPackageStartupMessages({ 
+  library(mvtnorm)
+  library(vars)
+ 
+})
+```
+
+## Background
+- 2021 edition
+- Time series variables build on the probability and the notion of the return of asset is correlated with the return on previous time unit
+- Time series variables cannot borrow the usual assumptions from random sampling 
+- We want to retain some of the observed data with time-invariant parameters (ex. mean, variance, and etc) and some variables to become time variable, which we use the term 'stationary' to describe the intention
+- keywords: 
+  - Section 4.1: univariate time series process, stationary and ergodicity, covariance stationary TS, Gaussian white noise process, random-walk model, c
+  - Section 4.2: covariance stationary multivariate TS 
+  - Section 4.3: univariate autoregressive-moving average TS, multivariate vector autoregression models
+
+## 4.1 Stochastic Processes
+A discrete-time stochastic process or time series can be represented by 
+$$\{..., Y_1, Y_2, ..., Y_t, Y_{t+1}, ...\} = \{Y_t\}^{\infty}_{t = -\infty}$$
+
+- we intend to capture the temporal relationship, if any, between the random variables  
+- note: the ordering of random variables matters in TS, but in random sampling from population it does not matter
+
+
+The realization of stochastic process will be represented as  
+$$\{Y_1 = y_1, Y_2 = y_2, ..., Y_T = y_T\} = \{y_t\}^{T}_{t = 1}$$
+
+- the goal of TS modeling is to describe the probability behavior under the stochastic process in such a way we know of their time dependence  
+  - to do so, some assumptions need to be made regarding the joint behavior of the random variables
+
+### Stationary Stochastic Processes
+- We want preserve the identical distribution assumption but not the independent assumption from iid to the process. 
+
+note: stationary in our TS term is reserved for mean, variance, and autocorrelation constant  
+
+**Strict definition**
+
+\(\{Y_t\}\) is strictly stationary if, for any given finite integer \(r\) and for any set of time units \(t\), the joint distribution of \((Y_{t1}, \dots, Y_{tr})\) depends only on \((t_{1}-t), \dots, (t_{r}-t)\) but not on \(t\), making the joint distribution the same for any given time unit prior.
+
+Proposition:  
+- Let \(\{Y_t\}\) be strictly stationary and let \(g(\cdot)\) be any function of the elements of \(\{Y_t\}\). Then \(\{g(Y_t)\}\) is also strictly stationary.  
+  - Example (iid sequence): If \(\{Y_t\}\) is an iid sequence, then it is strictly stationary.  
+  - Example (non iid sequence): If \(\{Y_t\}\) is an iid and let \(X \sim N(0,1)\) independent of \(\{Y_t\}\). Define \(Z_t = Y_t + X\). The sequence \(\{Z_t\}\) will not be an independent sequence, but is an identically distributed and is strictly stationary.
+  
+**Weak definition**
+aka. the covariance stationary
+
+A stochastic process \(\{Y_t\}\) is covariance stationary if:  
+1. \(E[Y_t] = \mu < \infty\) does not depend on \(t\)  
+2. \(\mathrm{var}(Y_t) = \sigma^2 < \infty\) does not depend on \(t\)  
+3. \(\mathrm{cov}(Y_t, Y_{t-j}) = \gamma < \infty\), and depends only on \(j\) (for \(j \in \mathbb{R}\))  
+
+   - note: \(\gamma_j\) is the autocovariance that measures the direction of linear dependence between \(Y_t\) and \(Y_{t-j}\)
+
+The autocorrelation can be defined with autocovariance and variance:
+
+\[
+\rho_j = \frac{\mathrm{cov}(Y_t, Y_{t-j})}{\sqrt{\mathrm{var}(Y_t)\,\mathrm{var}(Y_{t-j})}} 
+= \frac{\gamma_j}{\sigma^2}.
+\]
+
+- note: recall how \(Y_t\) and \(Y_{t-j}\) should have the same distribution, making them have the same variance  
+- \(\rho_j\) measures both the direction and strength of linear dependency
+
+```{r}
+# A graphical illustration of the temporal dependence, autocorrelation function, given by plot of rho_j against j (rho_j = (0.9)^j)
+
+rho <- 0.9 
+rho_vec <- (rho)^(1:10) # 0.9^j, where j = 1,..., 10
+ts.plot(rho_vec, type="h", lwd=2, col="blue", xlab="Lag j", 
+        ylab=expression(rho[j]))
+```
+
+- With the defintion of covariance stationarity requires $E[Y_t] < \infty$ and $var(Y_t) < \infty$ 
+  - achievable tiwht normal disitrbution, but say you have a student t disbution (fat tail)...
+  
+  
+**Gaussian White Nose**
+- Let $Y_t \sim iid N(0, \sigma^2)$, then ${Y_t}$ is called a Gaussian white noise (GWN) process, denoted by $Y_t \sim GWN(0, \sigma^2)$
+
+Notice that
+1. $E[Y_t] = 0$ is independt of t
+2. $var(Y_t) = \sigma^2$ is indepened of t
+3. $cov(Y_t, Y_{t-j}) = 0$ indepenedent of t for all j >0
+```{r}
+# the simulation of GWN is simply a call of N(0, sigma^2)
+set.seed(123)
+
+y = rnorm(250)
+
+ts.plot(y,main="Gaussian White Noise Process",xlab="time",
+        ylab="y(t)", col="blue", lwd=2)
+abline(h=0)
+```
+
+Example: GWN model for continously compounded returns
+Let $r_T$ be a continoulsy compounded montly retrun of a stock and assum that $r_t \sim iid N(0,01, (0.05)^2)$, we can represent the GWN process as
+
+$$r_t = 0.01 + \epilson_t, \epislon \sim GWN(0, 0.05^2)$$
+```{r}
+# mean return: 0.01, error : GWN(0, 0.05^2); compounded months: T = 60
+
+set.seed(123)
+y = rnorm(60, mean=0.01, sd=0.05)
+ts.plot(y,main="GWN Process for Monthly Continuously Compounded Returns",
+        xlab="time",ylab="r(t)", col="blue", lwd=2)
+abline(h=c(0,0.01,-0.04,0.06), lwd=2, 
+       lty=c("solid","solid","dotted","dotted"), 
+       col=c("black", "red", "red", "red"))
+
+```
