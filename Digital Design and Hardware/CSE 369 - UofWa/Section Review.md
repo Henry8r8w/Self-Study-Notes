@@ -1,3 +1,92 @@
+
+## Sec 6 ()
+### Excercise 2
+- Psychic test: a user needs to correctly guess 8 consecutive 4-bit patterns to be declared psychic
+![alt text](psychic.png)
+
+
+### Top-Level Module Test Bench
+Structurally like a normal test bench:
+- Module skeleton.
+- Create signals for module you’re going to test.
+- Instantiate device under test
+- Generate clock (if needed)
+- Define test vectors in an initial block.
+
+Test vectors should focus on testing module interconnections:
+- Test that the reset affects all of the internal modules that it should.
+- Don’t thoroughly test internal modules again (rely on individual test benches).
+- Test connections between modules – data passing timing and reactions.
+### Top-Level MOdule Implementation
+1. Start with the normal module outline.
+2. Generate/declare internal signals (e.g., port connections for modules).
+- Use copy-and-paste from internal module definitions to avoid typos!
+3. Instantiate internal modules and make port connections.
+4. Can include some logic but generally want to keep this to a minimum.
+- Significant logic should be abstracted into internal modules.
+
+### Top-level Module
+TLM interfaces with the actual device ports
+- ex. CLOCK_50, SW, KEY, LEDR, HEX
+    - recommendation: as little logic (some gates and routing elements okay) in the top-level module to increase the portability of your code across different devices (i.e., moving from DE1-SoC to DE0-Nano should only be reconnecting different I/O ports to modules).
+- For readability, one can also rename signals using assign statements
+    - (e.g., assign clk = CLOCK_50;, assign reset = ~KEY[3];) 
+
+### Exercise 1b Pulse Generator
+- We use FSM to generate pulses for rising edges of an input signal (i.e., outputs 1 for one clock cycle each time the input goes from low to high, no matter how long the input is held high)
+```mermaid
+statediagram
+    [*] -->(0)
+    (0)  --> (1): 1/1
+    (1) --> (0): 0/0
+    (0) --> (0): 0/0
+    (1)--> (1): 1/0
+````
+
+
+```systemverilog
+module pulse (input logic clk, reset, in, output logic out);
+    enum logic {ZERO, ONE} ps, ns; // define: your state logic
+
+    assign ns = in ? ONE : ZERO; // define: your transition logic
+
+    always_ff @(posedge clk) // set up your clocking  triggered at positive edge
+        ps <= reset ? ZERO : ns; // Zero is selected when reset is triggered, else next statement is triggered., determined by our transition logic
+    // output high when current state is ZERO and input 'in' is high
+    assign out = (ps == ZERO) & in; // set up your output logic; we expect an output of 0 given the FSM rendering 0 & 1; this allows only one clock signal generation
+endmodule // pulse
+
+
+
+```
+### Exercise 1a (Synchronizer)
+- We use 2 flip-flop to implement a synchronizer to combat metastability
+```
+clk -> DFF_1, DFF_2
+External -> DFF_1
+DFF_1 -> DFF_2
+```
+```systemverilog
+module synch (input logic clk, reset, in, output logic out);
+    logic mid; // output of first FF, could be named anything
+    always_ff @(posedge clk)
+    if (reset)
+        {mid, out} <= 2'b00;
+    else
+        {mid, out} <= {in, mid};
+endmodule // synch
+```
+
+### User Input Issues
+- A major advantage of digital systems is the computational speed
+(e.g., 50 MHz clock means a computation every 20 ns!)
+    - however, human does not react that fast
+    - we only want to change an input for a clock cycle; prevent meta-stability
+
+- Solution
+    - add a **synchronizer** (for all external input except our "reset")
+    - add a edge detector/ pulse generator (e.g., KEYs)
+
 ## Sec 5 (vend15.sv, vend15_tb.sv, light_game.sv)
 ### Exercise 3
 Create a test bench for vend15 and simulate it in ModelSim
