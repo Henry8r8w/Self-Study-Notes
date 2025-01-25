@@ -5,7 +5,7 @@ TODO
 **/*tmp*/ 
 *.pyc
 **/Lecture Reference/*
-/Machine Learning & Data Programming
+**/Data Programming - materials-main/*
 
 
 # Ignore to clean the directory
