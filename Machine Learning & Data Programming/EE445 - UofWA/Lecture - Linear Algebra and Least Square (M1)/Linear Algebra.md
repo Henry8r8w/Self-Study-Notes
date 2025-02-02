@@ -1,7 +1,7 @@
 ### Chebyshev inequality
- Simple yet useulf ineuqlaity on relation between vector norm and vector entries
+ Simple yet useful inequality on the relation between vector norm and vector entries
 
-Suppsoe that k of the numbers $|x_1|,...|x_n|$ are $\greq$ a
+Suppsoe that k of the numbers $|x_1|,...|x_n|$ are $\geq$ a
 - then k of the numbers $x_1^2,..., x_n^2$ are $\geq a^2$
 - so $||x||^2 = \sum_{i}x_i^2 \geq ka^2$, and we have $k \leq ||x||^2 /a$
 - number of $x_i$ with $|x_i| \geq a $ is no more than $||x||^2 / a^2$
@@ -10,7 +10,7 @@ $$k \leq \frac{||x||^2}{a^2}$$
 
 root-mean square value : rms(x) = $\sqrt{\frac{x_1^2 +... + x_n^2}{n^2}} = \frac{||x||^2}{a^2}$
 
-Given a fraciton of entrey with |x_i| > a, (i.e. k /n ), we can express the chebyshev inequality in terms of rms
+Given a fraction of entry with |x_i| > a, (i.e. k /n ), we can express the chebyshev inequality in terms of rms
 
 $$\frac{||x||^2}{n (a^2)} = \frac{rms(x)}{a}$$
 ### Norm and distance
@@ -20,20 +20,20 @@ Properties:
 - homogeneity: $|\alpha x|| = |\alpha| ||x||$
 - triangle inequality: $||x+y|| \leq ||x|| + ||y||$
 - nonegativity: $||x|| \geq 0$
-- definteness: $||x|| = 0$ only if x = 0
+- definiteness: $||x|| = 0$ only if x = 0
 
 norm of block vectors:
 $$||(a,b,c)||^2 = a^{T}a + b^{T}b + c^{T}c = ||a||^2 + ||b||^2 + ||c||^2$$
 - dist(a, b) = $||a - b||$
-- triangel inquality
+- triangle inquality
     - $||a - c||  = || a- b + b -c|| \leq ||a-b|| + || b -c||$
 
 ### Linear functions
 - f should share same dimension
     -  $f:R^{n} \to R^$ means f is a function mapping n-vectors to scalars
--f should  satifies superpsotiion ($f(\alpha x+ \beta y) = \alphaf(x)+\betaf(y)$) holds for all scalars $\alpha, beta$ and all $x, y \in R^{n}$
+-f should  satisfies superposition ($f(\alpha x+ \beta y) = \alphaf(x)+\betaf(y)$) holds for all scalars $\alpha, beta$ and all $x, y \in R^{n}$
 
-The f is called linear function
+The f is calledthe  linear function
 
 
 **all linear functions are inner products**
@@ -69,7 +69,7 @@ $$
 $$
 
 ### Linear Combination
-y = $\beta_1 a_1+... + \beta_n a_n$, which is the linear combination of the coeeficientt beta to the a vector
+y = $\beta_1 a_1+... + \beta_n a_n$, which is the linear combination of the coefficient beta to the a vector
 2D example: $b = 0.75a_1 - a_2$
 
 Line and segment: a, b are n-vectors, $c = (1 - \theta)a + \thetab
